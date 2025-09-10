@@ -2,9 +2,9 @@
 Unity 2D games
 
 ** To do List:
-- [ ] Create the necessary folders
-- [ ] Add necessary assets
-- [ ] Add cars on the map
+- [x] Create the necessary folders
+- [x] Add necessary assets
+- [x] Add cars on the map
 - [ ] Create C# script for drag and drop
 - [ ] Create C# script for transformation
 - [ ] Create C# scritp for object fixation
