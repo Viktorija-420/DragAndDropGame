@@ -13,4 +13,10 @@ public class SceneChanger : MonoBehaviour
     {
         SceneManager.LoadScene("MainMenu");
     }
+
+    public void QuitGame()
+    {
+        Debug.Log("Byeeee! quiting game...");
+        Application.Quit();
+    }
 }
