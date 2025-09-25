@@ -31,7 +31,8 @@ public class DragAndDropScript : MonoBehaviour, IPointerDownHandler, IBeginDragH
     {
         if (Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
         {
-            objectScr.lastDragged = null;
+            ObjectScript.drag = true;
+            ObjectScript.lastDragged = eventData.pointerDrag;
             canvasGro.blocksRaycasts = false;
             canvasGro.alpha = 0.6f;
             rectTra.SetAsLastSibling();
@@ -63,16 +64,14 @@ public class DragAndDropScript : MonoBehaviour, IPointerDownHandler, IBeginDragH
     {
         if (Input.GetMouseButtonUp(0))
         {
-            objectScr.lastDragged = eventData.pointerDrag;
+            ObjectScript.drag = false;
             canvasGro.blocksRaycasts = true;
             canvasGro.alpha = 1.0f;
 
             if (objectScr.rightPlace)
             {
                 canvasGro.blocksRaycasts = false;
-                objectScr.lastDragged = null;
-
-
+                ObjectScript.lastDragged = null;
             }
 
             objectScr.rightPlace = false;
