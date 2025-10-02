@@ -189,7 +189,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Exit
+  m_Text: Iziet
 --- !u!222 &203269570
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -268,7 +268,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Car game
+  m_Text: "L\u012Bmenis 1"
 --- !u!222 &271024959
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -581,7 +581,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5271379154232972935, guid: f4bdf274af0ffbb44b3e90088d43aec2, type: 3}
+  m_Sprite: {fileID: -281640395285564585, guid: 8281e03a881a3db45b894daffa4e2eb4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -748,7 +748,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: GAME 2
+  m_Text: "L\u012Bmenis 2"
 --- !u!222 &962682307
 CanvasRenderer:
   m_ObjectHideFlags: 0

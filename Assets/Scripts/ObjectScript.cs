@@ -15,6 +15,9 @@ public class ObjectScript : MonoBehaviour
     public static GameObject lastDragged = null;
     public static bool drag = false;
 
+    [HideInInspector]
+    public RectTransform correctTarget; // pareizā vieta, kuru piesaista PlacementRandomizer
+
 
     void Awake()
     {
