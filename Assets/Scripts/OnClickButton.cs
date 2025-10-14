@@ -24,4 +24,10 @@ public class SceneChanger : MonoBehaviour
         Debug.Log("Byeeee! quiting game...");
         Application.Quit();
     }
+    public void RestartGame()
+    {
+        Time.timeScale = 1f; // Reset time scale in case it was changed
+        Scene currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.name);
+    }
 }

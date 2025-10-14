@@ -1,13 +1,17 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AutoStartTimer : MonoBehaviour
+public class Timer : MonoBehaviour
 {
     public Text timerText;
     private float timer = 0f;
 
     void Update()
     {
+        // Stop updating when the game has ended
+        if (GameManager.GameEnded)
+            return;
+
         timer += Time.deltaTime;
 
         int hours = Mathf.FloorToInt(timer / 3600f);
@@ -17,4 +21,3 @@ public class AutoStartTimer : MonoBehaviour
         timerText.text = string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
     }
 }
-

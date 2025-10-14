@@ -10,7 +10,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
     public float waveFrequency = 1f;
     public float fadeDuration = 1.5f;
     private ObjectScript objectScript;
-    private ScreenBoundaries ScreenBoundaries;
+    private ScreenBoundaries screenBoundriesScript;
     private CanvasGroup canvasGroup;
     private RectTransform rectTransform;
     private bool isFadingOut = false;
@@ -32,7 +32,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         orginalColor = image.color;
 
         objectScript = Object.FindFirstObjectByType<ObjectScript>();
-        ScreenBoundaries = Object.FindFirstObjectByType<ScreenBoundaries>();
+        screenBoundriesScript = Object.FindFirstObjectByType<ScreenBoundaries>();
         StartCoroutine(FadeIn());
     }
 
@@ -43,14 +43,14 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         rectTransform.anchoredPosition += new Vector2(-speed * Time.deltaTime, waveOffset * Time.deltaTime);
 
         // Iznīcinās ja lido pa kreisi
-        if (speed > 0 && transform.position.x < (ScreenBoundaries.minX + 80) && !isFadingOut)
+        if (speed > 0 && transform.position.x < (screenBoundriesScript.minX + 80) && !isFadingOut)
         {
             isFadingOut = true;
             StartCoroutine(FadeOutAndDestroy());
         }
 
         // Iznīcinās ja lido pa labi
-        if (speed < 0 && transform.position.x > (ScreenBoundaries.maxX - 80) && !isFadingOut)
+        if (speed < 0 && transform.position.x > (screenBoundriesScript.maxX - 80) && !isFadingOut)
         {
             isFadingOut = true;
             StartCoroutine(FadeOutAndDestroy());
@@ -63,50 +63,26 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         {
             Debug.Log("Bomb hit by cursor (without dragging)");
             TriggerExplosion();
-        }
+        } 
 
 
-        if (ObjectScript.drag && !isFadingOut &&
+        if(ObjectScript.drag && !isFadingOut && 
             RectTransformUtility.RectangleContainsScreenPoint(
                 rectTransform, Input.mousePosition, Camera.main))
         {
             Debug.Log("Obstacle hit by drag");
-            if (ObjectScript.lastDragged != null)
+           if(ObjectScript.lastDragged != null)
             {
                 StartCoroutine(ShrinkAndDestroy(ObjectScript.lastDragged, 0.5f));
                 ObjectScript.lastDragged = null;
                 ObjectScript.drag = false;
             }
 
-            StartCoroutine(FadeOutAndDestroy());
-            isFadingOut = true;
-
-            image.color = Color.cyan;
-            StartCoroutine(RecoverColor(0.5f));
-            StartCoroutine(Vibrate());
-            if (objectScript.effects != null && objectScript.audioCli != null)
-            {
-                objectScript.effects.PlayOneShot(objectScript.audioCli[15]);
-            }
-
-            if (CompareTag("Bomb"))
+           if(CompareTag("Bomb"))
                 StartToDestroy(Color.red);
 
             else
                 StartToDestroy(Color.cyan);
-        }
-        if (ObjectScript.lastDragged != null)
-        {
-            StartCoroutine(ShrinkAndDestroy(ObjectScript.lastDragged, 0.5f));
-            
-            // Notify GameManager that a vehicle was destroyed
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.VehicleDestroyed();
-            }
-            
-            ObjectScript.lastDragged = null;
-            ObjectScript.drag = false;
         }
     }
 
@@ -121,7 +97,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         }
 
         image.color = Color.red;
-        StartCoroutine(RecoverColor(0.9f));
+        StartCoroutine(RecoverColor(0.4f));
         StartCoroutine(Vibrate());
         StartCoroutine(WaitBeforeExplode());
 
@@ -151,7 +127,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
                 FlyingObjectsControllerScript obj = hit.GetComponent<FlyingObjectsControllerScript>();
                 if(obj != null && !obj.isExploding)
                 {
-                    obj.StartToDestroy(Color.red);
+                    obj.StartToDestroy(Color.cyan);
                 }
             }
         }
@@ -165,10 +141,10 @@ public class FlyingObjectsControllerScript : MonoBehaviour
             isFadingOut = true;
 
             image.color = c;
-            StartCoroutine(RecoverColor(0.9f));
+            StartCoroutine(RecoverColor(0.5f));
 
             StartCoroutine(Vibrate());
-            objectScript.effects.PlayOneShot(objectScript.audioCli[14]);
+            objectScript.effects.PlayOneShot(objectScript.audioCli[5]);
         }
     }
 
@@ -207,7 +183,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         Quaternion orginalRotation = target.transform.rotation;
         float t = 0f;
 
-        while(t < duration)
+        while (t < duration)
         {
             t += Time.deltaTime;
             target.transform.localScale = Vector3.Lerp(orginalScale, Vector3.zero, t / duration);
@@ -218,6 +194,8 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         }
         // Ko darīt ar māšinu tālāk?
         // Nav obligāti jāiznīcina, varbūt jāatgriež sākuma pozīcijā?
+        ObjectScript.carsLeft--;
+        ObjectScript.carsDestroyed++;
         Destroy(target);
     }
 

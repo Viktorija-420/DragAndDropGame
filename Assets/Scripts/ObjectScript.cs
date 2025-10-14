@@ -14,14 +14,17 @@ public class ObjectScript : MonoBehaviour
     public bool rightPlace = false;
     public static GameObject lastDragged = null;
     public static bool drag = false;
-
-    [HideInInspector]
-    public RectTransform correctTarget; // pareizā vieta, kuru piesaista PlacementRandomizer
+    public static int carsCorrectlyPlaced = 0;
+    public static int carsDestroyed = 0;
+    public static int carsLeft;
 
 
     void Awake()
     {
+        carsLeft = vehicles.Length;
         startCoordinates = new Vector2[vehicles.Length];
+        Debug.Log(vehicles.Length);
+        Debug.Log(startCoordinates.Length);
         for (int i = 0; i < vehicles.Length; i++)
         {
             startCoordinates[i] = vehicles[i].GetComponent<RectTransform>().localPosition;
