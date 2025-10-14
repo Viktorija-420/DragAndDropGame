@@ -16,6 +16,7 @@ TagManager:
   - Policija
   - Traktor
   - Traktor2
+  - Bomb
   layers:
   - Default
   - TransparentFX

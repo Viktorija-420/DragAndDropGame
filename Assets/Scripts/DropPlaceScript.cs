@@ -177,6 +177,10 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
                 }
             }
         }
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.VehiclePlaced();
+        }
     }
 }
 

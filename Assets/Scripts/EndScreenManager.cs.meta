@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 03bedcd47df2b4f4898645368c40243e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - endScreenPanel: {instanceID: 0}
+  - timeText: {instanceID: 0}
+  - resultText: {instanceID: 0}
+  - restartButton: {instanceID: 0}
+  - mainMenuButton: {instanceID: 0}
+  - starFilled: {fileID: 21300000, guid: 5f01f4f017b369c48812edd68a27fd46, type: 3}
+  - starEmpty: {fileID: 21300000, guid: 8fb2947dc30d43a40b31fc0cffd75137, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
