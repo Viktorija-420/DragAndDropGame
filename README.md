@@ -9,5 +9,6 @@ Unity 2D games
 - [x] Create C# script for transformation
 - [x] Create C# scritp for object fixation
 - [ ] Add necessary sounds and audio sources
-- [ ] Create logic for winning
+- [x] Create logic for winning
 - [ ] Create camera script for zoom-in/out and camera restrictions
+- [ ] Create cars on random
