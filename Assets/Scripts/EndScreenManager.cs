@@ -19,11 +19,13 @@ public class EndScreenManager : MonoBehaviour
     
     [Header("Time Requirements (seconds)")]
     public float threeStarTime = 60f;    // 1 minute
-    public float twoStarTime = 90f;      // 1.5 minutes
-    // Anything above 90s gets 1 star
+    public float twoStarTime = 80f;      // 1.5 minutes
     
     private void Start()
     {
+        // REMOVE THIS LINE - it's loading MainMenu automatically!
+        // SceneManager.LoadScene("MainMenu");
+        
         // Hide end screen at start
         if (endScreenPanel != null)
             endScreenPanel.SetActive(false);
@@ -55,7 +57,7 @@ public class EndScreenManager : MonoBehaviour
             // Update star display
             UpdateStars(stars);
             
-            // Update time text
+            // Update time text - USE THE SAME FORMAT AS TIMER
             if (timeText != null)
             {
                 timeText.text = "Time: " + FormatTime(completionTime);
@@ -77,6 +79,7 @@ public class EndScreenManager : MonoBehaviour
                 resultText.color = Color.red;
             }
             
+            // Update time text - USE THE SAME FORMAT AS TIMER
             if (timeText != null)
             {
                 timeText.text = "Time: " + FormatTime(completionTime);
@@ -91,15 +94,15 @@ public class EndScreenManager : MonoBehaviour
     {
         if (completionTime <= threeStarTime)
         {
-            return 3; // 3 stars for completing in 1 minute or less
+            return 3;
         }
         else if (completionTime <= twoStarTime)
         {
-            return 2; // 2 stars for completing in 1-1.5 minutes
+            return 2;
         }
         else
         {
-            return 1; // 1 star for completing in more than 1.5 minutes
+            return 1;
         }
     }
     
@@ -134,11 +137,13 @@ public class EndScreenManager : MonoBehaviour
         }
     }
     
+    // UPDATED: Use the same format as the Timer script (HH:MM:SS)
     private string FormatTime(float timeInSeconds)
     {
-        int minutes = Mathf.FloorToInt(timeInSeconds / 60f);
+        int hours = Mathf.FloorToInt(timeInSeconds / 3600f);
+        int minutes = Mathf.FloorToInt((timeInSeconds % 3600f) / 60f);
         int seconds = Mathf.FloorToInt(timeInSeconds % 60f);
-        return string.Format("{0:00}:{1:00}", minutes, seconds);
+        return string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
     }
     
     private void RestartGame()
@@ -148,7 +153,6 @@ public class EndScreenManager : MonoBehaviour
     
     private void GoToMainMenu()
     {
-        // Replace "MainMenu" with your actual main menu scene name
         SceneManager.LoadScene("MainMenu");
     }
 }

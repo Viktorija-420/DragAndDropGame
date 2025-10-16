@@ -5,11 +5,11 @@ public class Timer : MonoBehaviour
 {
     public Text timerText;
     private float timer = 0f;
+    private bool isRunning = true;
 
     void Update()
     {
-        // Stop updating when the game has ended
-        if (GameManager.GameEnded)
+        if (!isRunning)
             return;
 
         timer += Time.deltaTime;
@@ -19,5 +19,23 @@ public class Timer : MonoBehaviour
         int seconds = Mathf.FloorToInt(timer % 60f);
 
         timerText.text = string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
+    }
+
+    public void ResetTimer()
+    {
+        timer = 0f;
+        isRunning = true;
+        timerText.text = "00:00:00";
+    }
+
+    public void StopTimer()
+    {
+        isRunning = false;
+    }
+
+    // Get the current timer value
+    public float GetCurrentTime()
+    {
+        return timer;
     }
 }
