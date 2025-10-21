@@ -21,11 +21,11 @@ public class EndScreenManager : MonoBehaviour
     public float threeStarTime = 60f;    // 1 minute
     public float twoStarTime = 80f;      // 1.5 minutes
     
+    // Reference to CameraScript to disable controls
+    private CameraScript cameraScript;
+
     private void Start()
     {
-        // REMOVE THIS LINE - it's loading MainMenu automatically!
-        // SceneManager.LoadScene("MainMenu");
-        
         // Hide end screen at start
         if (endScreenPanel != null)
             endScreenPanel.SetActive(false);
@@ -36,6 +36,9 @@ public class EndScreenManager : MonoBehaviour
             
         if (mainMenuButton != null)
             mainMenuButton.onClick.AddListener(GoToMainMenu);
+        
+        // Find CameraScript in the scene
+        cameraScript = FindObjectOfType<CameraScript>();
     }
     
     public void ShowEndScreen(bool success, float completionTime)
@@ -44,6 +47,9 @@ public class EndScreenManager : MonoBehaviour
         {
             endScreenPanel.SetActive(true);
             UpdateEndScreen(success, completionTime);
+            
+            // Disable camera controls when end screen is shown
+            DisableCameraControls();
         }
     }
     
@@ -57,7 +63,7 @@ public class EndScreenManager : MonoBehaviour
             // Update star display
             UpdateStars(stars);
             
-            // Update time text - USE THE SAME FORMAT AS TIMER
+            // Update time text
             if (timeText != null)
             {
                 timeText.text = "Time: " + FormatTime(completionTime);
@@ -79,7 +85,7 @@ public class EndScreenManager : MonoBehaviour
                 resultText.color = Color.red;
             }
             
-            // Update time text - USE THE SAME FORMAT AS TIMER
+            // Update time text
             if (timeText != null)
             {
                 timeText.text = "Time: " + FormatTime(completionTime);
@@ -137,17 +143,38 @@ public class EndScreenManager : MonoBehaviour
         }
     }
     
-    // UPDATED: Use the same format as the Timer script (HH:MM:SS)
     private string FormatTime(float timeInSeconds)
     {
         int hours = Mathf.FloorToInt(timeInSeconds / 3600f);
-        int minutes = Mathf.FloorToInt((timeInSeconds % 3600f) / 60f);
+        int minutes = Mathf.FloorToInt(timeInSeconds % 3600f / 60f);
         int seconds = Mathf.FloorToInt(timeInSeconds % 60f);
         return string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
     }
     
+    // Method to disable camera controls
+    private void DisableCameraControls()
+    {
+        if (cameraScript != null)
+        {
+            // Atspējojam tikai zoom, vai arī visas kontroles
+            cameraScript.SetZoomEnabled(false); // Tikai zoom izslēgts
+            // VAI: cameraScript.DisableAllControls(); // Visas kontroles izslēgtas
+        }
+    }
+    
+    // Method to enable camera controls
+    private void EnableCameraControls()
+    {
+        if (cameraScript != null)
+        {
+            cameraScript.EnableAllControls();
+        }
+    }
+    
     private void RestartGame()
     {
+        // Ieslēdzam atpakaļ kameras kontroles pirms restartēšanas
+        EnableCameraControls();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     

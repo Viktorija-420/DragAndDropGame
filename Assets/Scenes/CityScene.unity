@@ -2790,6 +2790,7 @@ MonoBehaviour:
   endGameScreen: {fileID: 797123382}
   timeText: {fileID: 1642652632}
   Stars: {fileID: 1720029157}
+  cameraScript: {fileID: 519420033}
 --- !u!1 &627566756
 GameObject:
   m_ObjectHideFlags: 0
@@ -5373,6 +5374,7 @@ MonoBehaviour:
   endGameScreen: {fileID: 797123382}
   timeText: {fileID: 1642652632}
   Stars: {fileID: 1720029157}
+  cameraScript: {fileID: 0}
 --- !u!1 &1433583704
 GameObject:
   m_ObjectHideFlags: 0

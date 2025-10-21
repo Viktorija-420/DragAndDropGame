@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public GameObject endGameScreen;
     public Text timeText;
     public GameObject Stars; // Parent object containing 3 child star GameObjects
+    public CameraScript cameraScript; // Pievienojam atsauci uz CameraScript
     public static bool GameEnded { get; private set; } = false;
 
     private bool gameEnded = false;
@@ -14,6 +15,12 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         endGameScreen.SetActive(false);
+        
+        // Automātiski atrodam CameraScript, ja nav piešķirts Inspectorā
+        if (cameraScript == null)
+        {
+            cameraScript = FindObjectOfType<CameraScript>();
+        }
     }
 
     void Update()
@@ -27,6 +34,7 @@ public class GameManager : MonoBehaviour
     void EndGame()
     {
         GameEnded = true;
+        gameEnded = true;
         // Time.timeScale = 0f;
 
         if (endGameScreen != null)
@@ -41,6 +49,8 @@ public class GameManager : MonoBehaviour
             timeText.text = string.Format("{0:00}:{1:00}:{2:00}", 
                 timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
 
+            // Resetējam kameru
+            ResetCamera();
 
         }
         else
@@ -63,10 +73,23 @@ public class GameManager : MonoBehaviour
         else if (carsCorrectlyPlaced >= 2) starsToShow = 1;
         else starsToShow = 0;
 
-        // Start at i = 1 because element 0 is the parent itse
+        // Start at i = 1 because element 0 is the parent itself
         for (int i = 1; i < stars.Length; i++)
         {
             stars[i].gameObject.SetActive(i <= starsToShow);
+        }
+    }
+
+    void ResetCamera()
+    {
+        // Izsaucam kameras resetēšanas metodi
+        if (cameraScript != null)
+        {
+            cameraScript.ResetCamera();
+        }
+        else
+        {
+            Debug.LogWarning("CameraScript nav atrasts! Nevar resetēt kameru.");
         }
     }
 }
