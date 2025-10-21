@@ -90,7 +90,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
     public void TriggerExplosion()
     {
         isExploding = true;
-        objectScript.effects.PlayOneShot(objectScript.audioCli[6], 5f);
+        objectScript.effects.PlayOneShot(objectScript.audioCli[14]);
 
         if(TryGetComponent<Animator>(out Animator animator))
         {
@@ -145,7 +145,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
             StartCoroutine(RecoverColor(0.5f));
 
             StartCoroutine(Vibrate());
-            objectScript.effects.PlayOneShot(objectScript.audioCli[5]);
+            objectScript.effects.PlayOneShot(objectScript.audioCli[15]);
         }
     }
 

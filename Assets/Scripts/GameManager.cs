@@ -5,18 +5,19 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public GameObject endGameScreen;
-    public Text timeText;
-    public GameObject Stars; // Parent object containing 3 child star GameObjects
-    public CameraScript cameraScript; // Pievienojam atsauci uz CameraScript
-    public static bool GameEnded { get; private set; } = false;
+    public Text statsText;
+    public GameObject Stars;
+    public CameraScript cameraScript; // Reference to the camera script
 
     private bool gameEnded = false;
+    private float startTime;
 
     void Start()
     {
         endGameScreen.SetActive(false);
-        
-        // Automātiski atrodam CameraScript, ja nav piešķirts Inspectorā
+        startTime = Time.time;
+
+        // If cameraScript is not assigned, try to find it
         if (cameraScript == null)
         {
             cameraScript = FindObjectOfType<CameraScript>();
@@ -25,53 +26,68 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (!gameEnded && ObjectScript.carsLeft <= 0)
+        // End game if at least one car is destroyed
+        if (!gameEnded && ObjectScript.carsDestroyed > 0)
         {
-            EndGame();
+            EndGame(0); // 0 stars
+        }
+
+        // End game if all cars placed
+        else if (!gameEnded && ObjectScript.carsLeft <= 0)
+        {
+            float totalTime = Time.time - startTime;
+            int stars = CalculateStars(totalTime);
+            EndGame(stars);
         }
     }
 
-    void EndGame()
+    void EndGame(int starsToShow)
     {
-        GameEnded = true;
         gameEnded = true;
-        // Time.timeScale = 0f;
+
+        // Reset camera
+        if (cameraScript != null)
+        {
+            cameraScript.ResetCamera();
+        }
+        else
+        {
+            Debug.LogWarning("CameraScript not found - cannot reset camera");
+        }
 
         if (endGameScreen != null)
         {
             endGameScreen.SetActive(true);
 
-            ShowStars(ObjectScript.carsCorrectlyPlaced);
-            float time = Mathf.Round(Time.time); // assuming timeText.time is your timer value in seconds
-            int roundedTime = Mathf.RoundToInt(time);
+            float totalTime = Time.time - startTime;
+            statsText.text = FormatTime(totalTime);
 
-            System.TimeSpan timeSpan = System.TimeSpan.FromSeconds(roundedTime);
-            timeText.text = string.Format("{0:00}:{1:00}:{2:00}", 
-                timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
-
-            // Resetējam kameru
-            ResetCamera();
-
+            ShowStars(starsToShow);
         }
         else
         {
             Debug.LogWarning("EndGameScreen is not assigned in the inspector.");
         }
 
-        // Time.timeScale = 0f;
-        Debug.Log("Game Over: All cars placed.");
+        Time.timeScale = 0f;
+        Debug.Log("Game Over");
     }
 
-    void ShowStars(int carsCorrectlyPlaced)
+    int CalculateStars(float time)
     {
-        // Get all star children under Stars
-        Transform[] stars = Stars.GetComponentsInChildren<Transform>(true);
-        int starsToShow = 0;
+        if (time < 120f) // less than 2 minutes
+            return 3;
+        else if (time < 180f) // less than 3 minutes
+            return 2;
+        else if (ObjectScript.carsLeft <= 0)
+            return 1;
+        else
+            return 0;
+    }
 
-        if (carsCorrectlyPlaced >= 10) starsToShow = 3;
-        else if (carsCorrectlyPlaced >= 5) starsToShow = 2;
-        else if (carsCorrectlyPlaced >= 2) starsToShow = 1;
-        else starsToShow = 0;
+    void ShowStars(int starsToShow)
+    {
+        Transform[] stars = Stars.GetComponentsInChildren<Transform>(true);
 
         // Start at i = 1 because element 0 is the parent itself
         for (int i = 1; i < stars.Length; i++)
@@ -80,16 +96,22 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void ResetCamera()
+    // Helper method to format time as mm:ss
+    private string FormatTime(float timeInSeconds)
     {
-        // Izsaucam kameras resetēšanas metodi
+        int hours = Mathf.FloorToInt(timeInSeconds / 3600);
+        int minutes = Mathf.FloorToInt(timeInSeconds % 3600 / 60);
+        int seconds = Mathf.FloorToInt(timeInSeconds % 60);
+        return string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
+    }
+
+
+    // Public method to manually reset camera (can be called from UI button)
+    public void ResetCameraManually()
+    {
         if (cameraScript != null)
         {
             cameraScript.ResetCamera();
-        }
-        else
-        {
-            Debug.LogWarning("CameraScript nav atrasts! Nevar resetēt kameru.");
         }
     }
 }

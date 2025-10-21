@@ -1,185 +1,102 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using System.Collections;
 
 public class EndScreenManager : MonoBehaviour
 {
-    [Header("UI Elements")]
-    public GameObject endScreenPanel;
-    public Image[] starImages;
-    public Text timeText;
-    public Text resultText;
-    public Button restartButton;
-    public Button mainMenuButton;
-    
-    [Header("Star Settings")]
-    public Sprite starFilled;
-    public Sprite starEmpty;
-    
-    [Header("Time Requirements (seconds)")]
-    public float threeStarTime = 60f;    // 1 minute
-    public float twoStarTime = 80f;      // 1.5 minutes
-    
-    // Reference to CameraScript to disable controls
-    private CameraScript cameraScript;
+    public GameObject endGameScreen;
+    public Text statsText;
+    public GameObject Stars;
+    public CameraScript cameraScript; // Reference to the camera script
 
-    private void Start()
+    private bool gameEnded = false;
+
+    void Start()
     {
-        // Hide end screen at start
-        if (endScreenPanel != null)
-            endScreenPanel.SetActive(false);
-        
-        // Setup button listeners
-        if (restartButton != null)
-            restartButton.onClick.AddListener(RestartGame);
-            
-        if (mainMenuButton != null)
-            mainMenuButton.onClick.AddListener(GoToMainMenu);
-        
-        // Find CameraScript in the scene
-        cameraScript = FindObjectOfType<CameraScript>();
-    }
-    
-    public void ShowEndScreen(bool success, float completionTime)
-    {
-        if (endScreenPanel != null)
+        endGameScreen.SetActive(false);
+
+        // If cameraScript is not assigned, try to find it
+        if (cameraScript == null)
         {
-            endScreenPanel.SetActive(true);
-            UpdateEndScreen(success, completionTime);
-            
-            // Disable camera controls when end screen is shown
-            DisableCameraControls();
+            cameraScript = FindObjectOfType<CameraScript>();
         }
     }
-    
-    private void UpdateEndScreen(bool success, float completionTime)
+
+    void Update()
     {
-        if (success)
+        if (!gameEnded && ObjectScript.carsLeft <= 0)
         {
-            // Calculate stars based on completion time
-            int stars = CalculateStars(completionTime);
-            
-            // Update star display
-            UpdateStars(stars);
-            
-            // Update time text
-            if (timeText != null)
-            {
-                timeText.text = "Time: " + FormatTime(completionTime);
-            }
-            
-            // Update result text
-            if (resultText != null)
-            {
-                resultText.text = "Level Complete!\n" + GetStarMessage(stars);
-                resultText.color = Color.green;
-            }
+            EndGame();
+        }
+    }
+
+    void EndGame()
+    {
+        gameEnded = true;
+
+        // Reset the camera when game ends
+        if (cameraScript != null)
+        {
+            cameraScript.ResetCamera();
         }
         else
         {
-            // Player failed
-            if (resultText != null)
-            {
-                resultText.text = "Try Again!";
-                resultText.color = Color.red;
-            }
-            
-            // Update time text
-            if (timeText != null)
-            {
-                timeText.text = "Time: " + FormatTime(completionTime);
-            }
-            
-            // Show 0 stars for failure
-            UpdateStars(0);
+            Debug.LogWarning("CameraScript not found - cannot reset camera");
         }
-    }
-    
-    private int CalculateStars(float completionTime)
-    {
-        if (completionTime <= threeStarTime)
+
+        if (endGameScreen != null)
         {
-            return 3;
-        }
-        else if (completionTime <= twoStarTime)
-        {
-            return 2;
+            endGameScreen.SetActive(true);
+            statsText.text =
+                "Time taken: " + FormatTime(Time.time) + "\n" +
+                "Cars correctly placed: " + ObjectScript.carsCorrectlyPlaced + "\n" +
+                "Cars destroyed: " + ObjectScript.carsDestroyed;
+
+            ShowStars(ObjectScript.carsCorrectlyPlaced);
         }
         else
         {
-            return 1;
+            Debug.LogWarning("EndGameScreen is not assigned in the inspector.");
         }
+
+        Time.timeScale = 0f;
+        Debug.Log("Game Over: All cars placed.");
     }
-    
-    private string GetStarMessage(int stars)
+
+    void ShowStars(int carsCorrectlyPlaced)
     {
-        switch (stars)
+        // Get all star children under Stars
+        Transform[] stars = Stars.GetComponentsInChildren<Transform>(true);
+        int starsToShow = 0;
+
+        if (carsCorrectlyPlaced >= 11) starsToShow = 3;
+        else if (carsCorrectlyPlaced >= 6) starsToShow = 2;
+        else if (carsCorrectlyPlaced >= 3) starsToShow = 1;
+        else starsToShow = 0;
+
+        // Start at i = 1 because element 0 is the parent itself
+        for (int i = 1; i < stars.Length; i++)
         {
-            case 3: return "Perfect! 3 Stars!";
-            case 2: return "Great! 2 Stars!";
-            case 1: return "Good! 1 Star!";
-            default: return "Complete!";
+            stars[i].gameObject.SetActive(i <= starsToShow);
         }
     }
-    
-    private void UpdateStars(int starsCount)
-    {
-        for (int i = 0; i < starImages.Length; i++)
-        {
-            if (starImages[i] != null)
-            {
-                if (i < starsCount)
-                {
-                    starImages[i].sprite = starFilled;
-                    starImages[i].color = Color.yellow;
-                }
-                else
-                {
-                    starImages[i].sprite = starEmpty;
-                    starImages[i].color = Color.gray;
-                }
-            }
-        }
-    }
-    
+
+    // Helper method to format time as mm:ss:mm
     private string FormatTime(float timeInSeconds)
     {
-        int hours = Mathf.FloorToInt(timeInSeconds / 3600f);
-        int minutes = Mathf.FloorToInt(timeInSeconds % 3600f / 60f);
-        int seconds = Mathf.FloorToInt(timeInSeconds % 60f);
+        int hours = Mathf.FloorToInt(timeInSeconds / 3600);
+        int minutes = Mathf.FloorToInt((timeInSeconds % 3600) / 60);
+        int seconds = Mathf.FloorToInt(timeInSeconds % 60);
+
         return string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
     }
-    
-    // Method to disable camera controls
-    private void DisableCameraControls()
+
+    // Public method to manually reset camera (can be called from UI button)
+    public void ResetCameraManually()
     {
         if (cameraScript != null)
         {
-            // Atspējojam tikai zoom, vai arī visas kontroles
-            cameraScript.SetZoomEnabled(false); // Tikai zoom izslēgts
-            // VAI: cameraScript.DisableAllControls(); // Visas kontroles izslēgtas
+            cameraScript.ResetCamera();
         }
-    }
-    
-    // Method to enable camera controls
-    private void EnableCameraControls()
-    {
-        if (cameraScript != null)
-        {
-            cameraScript.EnableAllControls();
-        }
-    }
-    
-    private void RestartGame()
-    {
-        // Ieslēdzam atpakaļ kameras kontroles pirms restartēšanas
-        EnableCameraControls();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-    
-    private void GoToMainMenu()
-    {
-        SceneManager.LoadScene("MainMenu");
     }
 }

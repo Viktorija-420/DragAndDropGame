@@ -7,6 +7,10 @@ public class SceneChanger : MonoBehaviour
     public void LoadCityMenu()
     {
         SceneManager.LoadScene("CityScene");
+        Time.timeScale = 1f;
+        ObjectScript.carsLeft = 12;
+        ObjectScript.carsCorrectlyPlaced = 0;
+        ObjectScript.carsDestroyed = 0;
     }
 
     public void LoadMainMenu()
@@ -26,8 +30,12 @@ public class SceneChanger : MonoBehaviour
     }
     public void RestartGame()
     {
-        Time.timeScale = 1f; // Reset time scale in case it was changed
+        Time.timeScale = 1f;
+        ObjectScript.carsLeft = 12;
+        ObjectScript.carsCorrectlyPlaced = 0;
+        ObjectScript.carsDestroyed = 0;
         Scene currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.name);
+    
     }
 }
