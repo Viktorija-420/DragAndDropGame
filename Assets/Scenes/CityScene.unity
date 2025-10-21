@@ -2309,8 +2309,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 214c8d81ca1de904d89b6cdc72ee27b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxZoom: 300
-  minZoom: 150
+  maxZoom: 500
+  minZoom: 200
   panSpeed: 6
   cam: {fileID: 519420031}
 --- !u!1 &521885449
