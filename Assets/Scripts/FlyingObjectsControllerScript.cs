@@ -34,6 +34,7 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         objectScript = Object.FindFirstObjectByType<ObjectScript>();
         screenBoundriesScript = Object.FindFirstObjectByType<ScreenBoundaries>();
         StartCoroutine(FadeIn());
+        canvasGroup.alpha = 1f;
     }
 
     // Update is called once per frame
@@ -154,7 +155,6 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         while(a < fadeDuration)
         {
             a += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Lerp(0f, 1f, a / fadeDuration);
             yield return null;
         }
 
