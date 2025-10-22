@@ -27,3 +27,4 @@ Unity 2D games
 
 * If you have won the game under 2mins, then you get 3 stars. If you win under 3mins, then you would gain 2 stars. Only over 3mins you gain 1 star.
   
+<img width="1478" height="828" alt="Readme-win" src="https://github.com/user-attachments/assets/50261650-471f-4d0a-9dfe-077388331b81" />
