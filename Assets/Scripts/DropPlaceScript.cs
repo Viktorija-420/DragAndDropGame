@@ -8,6 +8,20 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
     private float xSizeDiff, ySizeDiff;
     public ObjectScript objScript;
 
+    void Start()
+    {
+        if (objScript == null)
+{
+#if UNITY_2023_1_OR_NEWER
+    // Newer Unity versions (2023+)
+    objScript = FindFirstObjectByType<ObjectScript>();
+#else
+    // Older Unity versions (before 2023)
+    objScript = FindObjectOfType<ObjectScript>();
+#endif
+}
+    }
+
     public void OnDrop(PointerEventData eventData)
     {
         if (eventData.pointerDrag == null || !Input.GetMouseButtonUp(0) || Input.GetMouseButton(1) || Input.GetMouseButton(2))

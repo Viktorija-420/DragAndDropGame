@@ -37,7 +37,7 @@ public class EndScreenManager : MonoBehaviour
         // Reset the camera when game ends
         if (cameraScript != null)
         {
-            cameraScript.ResetCamera();
+            // cameraScript.ResetCamera();
         }
         else
         {
@@ -96,7 +96,7 @@ public class EndScreenManager : MonoBehaviour
     {
         if (cameraScript != null)
         {
-            cameraScript.ResetCamera();
+            // cameraScript.ResetCamera();
         }
     }
 }
