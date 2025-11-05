@@ -61,8 +61,15 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         Vector2 inputPosition;
         if (!TryGetInputPosition(out inputPosition))
             return;
- // ////////////////////////////////////////////////////////////////////////////
-            
+
+        // FIXED: Add validation for screen coordinates before using RectangleContainsScreenPoint
+        if (!IsValidScreenPosition(inputPosition))
+            return;
+
+        // FIXED: Add null checks for Camera.main
+        if (Camera.main == null)
+            return;
+
         if(CompareTag("Bomb") && !isExploding && 
             RectTransformUtility.RectangleContainsScreenPoint(
                 rectTransform, inputPosition, Camera.main))
@@ -70,7 +77,6 @@ public class FlyingObjectsControllerScript : MonoBehaviour
             Debug.Log("Bomb hit by cursor (without dragging)");
             TriggerExplosion();
         } 
-
 
         if(ObjectScript.drag && !isFadingOut && 
             RectTransformUtility.RectangleContainsScreenPoint(
@@ -86,10 +92,31 @@ public class FlyingObjectsControllerScript : MonoBehaviour
 
            if(CompareTag("Bomb"))
                 StartToDestroy(Color.red);
-
             else
                 StartToDestroy(Color.cyan);
         }
+    }
+
+    // FIXED: Added validation method for screen positions
+    private bool IsValidScreenPosition(Vector2 position)
+    {
+        // Check for infinity or NaN values
+        if (float.IsInfinity(position.x) || float.IsInfinity(position.y) ||
+            float.IsNaN(position.x) || float.IsNaN(position.y))
+        {
+            return false;
+        }
+
+        // Check if position is within reasonable screen bounds
+        // Adding some padding to account for edge cases
+        float padding = 100f;
+        if (position.x < -padding || position.x > Screen.width + padding ||
+            position.y < -padding || position.y > Screen.height + padding)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public void TriggerExplosion()
@@ -106,7 +133,6 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         StartCoroutine(RecoverColor(0.4f));
         StartCoroutine(Vibrate());
         StartCoroutine(WaitBeforeExplode());
-
     }
 
     IEnumerator WaitBeforeExplode()
@@ -227,7 +253,6 @@ public class FlyingObjectsControllerScript : MonoBehaviour
             elpased += Time.deltaTime;
             yield return null;
         }
-
     }
     
     bool TryGetInputPosition(out Vector2 position)
@@ -239,20 +264,20 @@ public class FlyingObjectsControllerScript : MonoBehaviour
         #elif UNITY_ANDROID
             if(Input.touchCount > 0)
             {
-                position = Input.GetTouch(0).position;
-                return true;
+                Touch touch = Input.GetTouch(0);
+                // FIXED: Only use valid touch phases
+                if (touch.phase == TouchPhase.Began || touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
+                {
+                    position = touch.position;
+                    return true;
+                }
             }
-            else
-            {
-                position = Vector2.zero;
-                return false;
-            }
+            
+            position = Vector2.zero;
+            return false;
         #else
             position = Vector2.zero;
-                return false;
+            return false;
         #endif
-
-
     }
-
 }
