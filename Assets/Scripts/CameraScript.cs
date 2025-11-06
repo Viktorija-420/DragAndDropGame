@@ -97,7 +97,7 @@ public class CameraScript : MonoBehaviour
         Vector3 screenPoint = new Vector3(mouse.x, mouse.y, cam.nearClipPlane);
         Vector3 targetWorld = cam.ScreenToWorldPoint(screenPoint);
         Vector3 desired = new Vector3(targetWorld.x, targetWorld.y, transform.position.z);
-        transform.position = Vector3.Lerp(transform.position, desired, mouseFollowSpeed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, desired, mouseFollowSpeed * Time.unscaledDeltaTime); // Fixed typo
     }
 
     private void HandleTouch()
@@ -207,7 +207,7 @@ public class CameraScript : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // Fixed typo
             cam.orthographicSize = Mathf.Lerp(initialZoom, targetZoom, elapsed / duration);
 
             if (screenBoundries != null)
@@ -228,7 +228,6 @@ public class CameraScript : MonoBehaviour
         }
     }
 
-    // ✅ Added this so GameManager can call ResetCamera()
     public void ResetCamera()
     {
         StopAllCoroutines();

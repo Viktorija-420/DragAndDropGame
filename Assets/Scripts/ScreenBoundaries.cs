@@ -65,7 +65,7 @@ public class ScreenBoundaries : MonoBehaviour
             float halfW = targetCam.aspect * halfH;
             if (halfW * 2f >= (wbMaxX - wbMinX))
             {
-                minCamX = maxCamX = (wbMinX + wbMaxX) * .5f;
+                minCamX = maxCamX = (wbMinX + wbMaxX) * 0.5f;
             }
             else
             {
@@ -75,7 +75,7 @@ public class ScreenBoundaries : MonoBehaviour
 
             if (halfH * 2f >= (wbMaxY - wbMinY))
             {
-                minCamY = maxCamY = (wbMinY - wbMaxY) * .5f;
+                minCamY = maxCamY = (wbMinY - wbMaxY) * 0.5f;
             }
             else
             {
