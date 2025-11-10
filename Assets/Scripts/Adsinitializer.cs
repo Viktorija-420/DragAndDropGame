@@ -5,45 +5,42 @@ using UnityEngine.Advertisements;
 public class Adsinitializer : MonoBehaviour, IUnityAdsInitializationListener
 {
     [SerializeField] string _androidGameId;
+    [SerializeField] string _iOSGameId;
     [SerializeField] bool _testMode = true;
+    
     private string _gameId;
     public event Action OnAdsInitialized;
 
-    private void Awake()
+    void Awake()
     {
-        InitializeAds(); // Fixed method name
+        InitializeAds();
     }
 
-    public void InitializeAds() // Fixed method name
+    public void InitializeAds()
     {
 #if UNITY_ANDROID
         _gameId = _androidGameId;
 #elif UNITY_IOS
-        // Add iOS game ID if needed
-        // _gameId = _iOSGameId;
+        _gameId = _iOSGameId;
 #else
         _gameId = "unexpected_platform";
 #endif
-        
-        if (!Advertisement.isInitialized && Advertisement.isSupported) // Fixed property name
+
+        if (!Advertisement.isInitialized && Advertisement.isSupported)
         {
-            Debug.Log($"Initializing Unity Ads with Game ID: {_gameId}, Test Mode: {_testMode}");
+            Debug.Log($"Initializing Unity Ads with Game ID: {_gameId}");
             Advertisement.Initialize(_gameId, _testMode, this);
-        }
-        else if (!Advertisement.isSupported)
-        {
-            Debug.LogWarning("Unity Ads is not supported on this platform.");
         }
     }
 
     public void OnInitializationComplete()
     {
-        Debug.Log("Unity Ads initialization complete!");
+        Debug.Log("Unity Ads initialization complete.");
         OnAdsInitialized?.Invoke();
     }
-    
+
     public void OnInitializationFailed(UnityAdsInitializationError error, string message)
     {
-        Debug.Log($"Unity Ads Initialization Failed: {error.ToString()} - {message}");
+        Debug.Log($"Unity Ads Initialization Failed: {error} - {message}");
     }
 }
