@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         // If cameraScript is not assigned, try to find it
         if (cameraScript == null)
         {
-            cameraScript = FindObjectOfType<CameraScript>();
+            cameraScript = FindFirstObjectByType<CameraScript>();
         }
     }
 

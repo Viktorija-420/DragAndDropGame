@@ -1,12 +1,16 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class AdManager : MonoBehaviour
 {
     public Adsinitializer adsInitializer;
     public InterstitialAds interstitialAd;
     [SerializeField] bool turnoffInterstitialAds = false;
+
+    public RewardedAds rewardedAd;
+    [SerializeField] bool turnoffRewardedAds = false;
 
     public static AdManager Instance { get; private set; }
 
@@ -35,6 +39,11 @@ public class AdManager : MonoBehaviour
         {
             interstitialAd.LoadAd();
         }
+
+        if (!turnoffRewardedAds && rewardedAd != null)
+        {
+            rewardedAd.LoadAd();
+        }
     }
 
     private void OnEnable()
@@ -57,16 +66,12 @@ public class AdManager : MonoBehaviour
             interstitialAd = FindFirstObjectByType<InterstitialAds>();
         }
 
-        // FIXED: Remove tag dependency - find button by name instead
+        // Find interstitial button
         Button interstitialButton = FindInterstitialButton();
         if (interstitialButton != null && interstitialAd != null)
         {
             interstitialAd.SetButton(interstitialButton);
             Debug.Log("Interstitial button found and set up");
-        }
-        else
-        {
-            Debug.Log("No interstitial button found in scene - ads will still show automatically");
         }
 
         // SHOW AD ON EVERY SCENE LOAD
@@ -74,9 +79,31 @@ public class AdManager : MonoBehaviour
         {
             StartCoroutine(ShowAdOnSceneLoad());
         }
+
+        // Find rewarded ad if null
+        if (rewardedAd == null)
+            rewardedAd = FindFirstObjectByType<RewardedAds>();
+
+        // Find rewarded button using reliable methods
+        Button rewardedButton = FindRewardedButton();
+        
+        if (rewardedButton != null && rewardedAd != null)
+        {
+            rewardedAd.SetButton(rewardedButton);
+            Debug.Log("Rewarded button found and set up");
+            
+            // Load the rewarded ad when scene loads
+            if (!turnoffRewardedAds)
+            {
+                rewardedAd.LoadAd();
+            }
+        }
+        else
+        {
+            Debug.Log("No rewarded button found in scene");
+        }
     }
 
-    // FIXED: Find button by name instead of tag
     private Button FindInterstitialButton()
     {
         // Method 1: Find by name
@@ -88,7 +115,7 @@ public class AdManager : MonoBehaviour
         }
 
         // Method 2: Find any button with "Ad" in the name
-        Button[] allButtons = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        Button[] allButtons = FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (Button button in allButtons)
         {
             if (button.name.Contains("Ad") || button.name.Contains("Interstitial"))
@@ -100,7 +127,36 @@ public class AdManager : MonoBehaviour
         return null;
     }
 
-    private System.Collections.IEnumerator ShowAdOnSceneLoad()
+    private Button FindRewardedButton()
+    {
+        // Method 1: Find by specific names
+        string[] possibleNames = { "RewardedButton", "RewardedAdButton", "BonusAdButton", "AdButton", "WatchAdButton" };
+        
+        foreach (string name in possibleNames)
+        {
+            GameObject buttonObj = GameObject.Find(name);
+            if (buttonObj != null)
+            {
+                Button button = buttonObj.GetComponent<Button>();
+                if (button != null) return button;
+            }
+        }
+
+        // Method 2: Find by name containing keywords
+        Button[] allButtons = FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Button button in allButtons)
+        {
+            if (button.name.Contains("Rewarded") || button.name.Contains("Bonus") || 
+                button.name.Contains("WatchAd") || button.name.Contains("Ad"))
+            {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
+    private IEnumerator ShowAdOnSceneLoad()
     {
         // Wait for 1 second to let everything initialize
         yield return new WaitForSecondsRealtime(1f);
@@ -116,10 +172,8 @@ public class AdManager : MonoBehaviour
             else
             {
                 Debug.Log("Ad not ready yet - loading and waiting");
-                // Load ad and wait for it to be ready
                 interstitialAd.LoadAd();
                 
-                // Wait up to 5 seconds for ad to load
                 float timeout = 5f;
                 float timer = 0f;
                 
@@ -134,15 +188,7 @@ public class AdManager : MonoBehaviour
                     Debug.Log("Ad loaded after waiting - showing now");
                     interstitialAd.ShowAd();
                 }
-                else
-                {
-                    Debug.LogWarning("Ad loading timeout - continuing without ad");
-                }
             }
-        }
-        else
-        {
-            Debug.LogWarning("InterstitialAd component not found");
         }
     }
 
