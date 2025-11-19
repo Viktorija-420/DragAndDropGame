@@ -17,6 +17,10 @@ TagManager:
   - Traktor
   - Traktor2
   - Bomb
+  - BannerButton
+  - RewardedButton
+  - IntersticialAdButton
+  - InterstitialButton
   layers:
   - Default
   - TransparentFX
