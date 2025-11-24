@@ -21,6 +21,7 @@ TagManager:
   - RewardedButton
   - IntersticialAdButton
   - InterstitialButton
+  - Tower
   layers:
   - Default
   - TransparentFX
