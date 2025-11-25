@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+[RequireComponent(typeof(RectTransform), typeof(Image))]
 public class DiskDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Tooltip("1 = smallest, larger number = bigger disk")]
@@ -13,43 +14,33 @@ public class DiskDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     [HideInInspector]
     public int currentTowerIndex = -1;
 
-    private Rigidbody2D rb;
-    private Collider2D col;
-    private Camera cam;
+    private RectTransform rectTransform;
+    private Image image;
+    private Canvas canvas;
+    private CanvasGroup canvasGroup;
 
-    private Vector2 pointerOffset;
     private Vector2 startPosition;
     private int startTower;
+    private Transform startParent;
 
-    // Smooth snapping
-    private Vector3 targetPosition;
-    private bool snapping = false;
-    public float snapSpeed = 5f;
+    // Visual feedback
+    private Color originalColor;
+    public Color dragColor = new Color(1f, 1f, 1f, 0.7f);
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        col = GetComponent<Collider2D>();
-        cam = Camera.main;
-
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-        targetPosition = transform.position;
-    }
-
-    private void FixedUpdate()
-    {
-        if (snapping)
+        rectTransform = GetComponent<RectTransform>();
+        image = GetComponent<Image>();
+        canvas = GetComponentInParent<Canvas>();
+        
+        // Get or add CanvasGroup
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
         {
-            rb.MovePosition(Vector3.MoveTowards(rb.position, targetPosition, snapSpeed * Time.fixedDeltaTime));
-            if ((Vector2)rb.position == (Vector2)targetPosition)
-                snapping = false;
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
-    }
 
-    public void SetTargetPosition(Vector3 pos)
-    {
-        targetPosition = pos;
-        snapping = true;
+        originalColor = image.color;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -57,19 +48,18 @@ public class DiskDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         if (!draggable) return;
         if (!GameManager2.Instance.IsTopDisk(this)) return;
 
-        startPosition = rb.position;
+        startPosition = rectTransform.anchoredPosition;
         startTower = currentTowerIndex;
+        startParent = transform.parent;
 
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
+        // Visual feedback
+        image.color = dragColor;
+        canvasGroup.alpha = 0.8f;
+        canvasGroup.blocksRaycasts = false;
 
-        rb.isKinematic = true;
-        col.enabled = false;
-
-        Vector2 pointerWorld = cam.ScreenToWorldPoint(eventData.position);
-        pointerOffset = (Vector2)rb.position - pointerWorld;
-
-        snapping = false;
+        // Bring to front while dragging and detach from parent temporarily
+        transform.SetParent(canvas.transform);
+        transform.SetAsLastSibling();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -77,32 +67,83 @@ public class DiskDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         if (!draggable) return;
         if (!GameManager2.Instance.IsTopDisk(this)) return;
 
-        Vector2 pointerWorld = cam.ScreenToWorldPoint(eventData.position);
-        Vector2 targetPos = pointerWorld + pointerOffset;
-        rb.MovePosition(targetPos);
+        // Convert screen position to canvas position
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(
+            canvas.transform as RectTransform,
+            eventData.position,
+            canvas.worldCamera,
+            out Vector3 worldPoint
+        );
+
+        rectTransform.position = worldPoint;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        // Always restore visual properties
+        image.color = originalColor;
+        canvasGroup.alpha = 1f;
+        canvasGroup.blocksRaycasts = true;
+
         if (!draggable)
         {
-            rb.position = startPosition;
+            ReturnToStartPosition();
             return;
         }
 
-        Transform closest = GameManager2.Instance.FindClosestTower(rb.position);
-        if (closest != null && GameManager2.Instance.TryMove(this, closest))
+        // Find which tower we're over
+        int targetTowerIndex = FindTowerUnderPointer(eventData.position);
+        
+        if (targetTowerIndex >= 0 && targetTowerIndex != currentTowerIndex)
         {
-            // Snap handled in TryMove
-        }
-        else
-        {
-            // Invalid move: revert smoothly
-            SetTargetPosition(startPosition);
-            GameManager2.Instance.RegisterDiskAtTower(this, startTower);
+            // Try to move to new tower
+            Transform targetTower = GameManager2.Instance.towers[targetTowerIndex];
+            if (GameManager2.Instance.TryMove(this, targetTower))
+            {
+                // Success - position will be updated by GameManager
+                return;
+            }
         }
 
-        rb.isKinematic = false;
-        col.enabled = true;
+        // Invalid move or same tower: return to original position
+        ReturnToStartPosition();
+        GameManager2.Instance.RegisterDiskAtTower(this, startTower);
+    }
+
+    private int FindTowerUnderPointer(Vector2 screenPosition)
+    {
+        // Check which tower rect contains the pointer
+        for (int i = 0; i < GameManager2.Instance.towers.Length; i++)
+        {
+            if (GameManager2.Instance.towers[i] == null) continue;
+
+            RectTransform towerRect = GameManager2.Instance.towers[i].GetComponent<RectTransform>();
+            if (towerRect == null) continue;
+
+            Vector2 localPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                towerRect,
+                screenPosition,
+                canvas.worldCamera,
+                out localPoint
+            );
+
+            if (towerRect.rect.Contains(localPoint))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void ReturnToStartPosition()
+    {
+        transform.SetParent(startParent);
+        rectTransform.anchoredPosition = startPosition;
+    }
+
+    public void SetPosition(Vector2 newPosition)
+    {
+        rectTransform.anchoredPosition = newPosition;
     }
 }
