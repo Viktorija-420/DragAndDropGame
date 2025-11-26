@@ -71,7 +71,6 @@ public class UIManager : MonoBehaviour
             SceneManager.LoadScene("MainMenu");
     }
 
-    // ADD THIS MISSING METHOD
     private void InitializeStars()
     {
         // Hide all filled stars at start
@@ -215,6 +214,29 @@ public class UIManager : MonoBehaviour
             timerText.text = "Time: " + FormatTime(gameTime);
     }
 
+    // Public method to reduce moves (for ads)
+    public void ReduceMoves(int reductionAmount)
+    {
+        // Ensure moves don't go below 0
+        moveCount = Mathf.Max(0, moveCount - reductionAmount);
+        UpdateMovesText();
+        
+        Debug.Log($"Moves reduced by {reductionAmount}. Current moves: {moveCount}");
+    }
+
+    // Public method to get current moves (optional)
+    public int GetCurrentMoves()
+    {
+        return moveCount;
+    }
+
+    // Public method to set moves (for debugging or special cases)
+    public void SetMoves(int newMoveCount)
+    {
+        moveCount = Mathf.Max(0, newMoveCount);
+        UpdateMovesText();
+    }
+
     private void UpdateMovesText()
     {
         if (movesText != null && isPlaying)
@@ -243,7 +265,7 @@ public class UIManager : MonoBehaviour
         if (winPanel != null)
             winPanel.SetActive(false);
         
-        InitializeStars(); // This should work now
+        InitializeStars();
         
         if (GameManager2.Instance != null)
             GameManager2.Instance.InitializeGame();

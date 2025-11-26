@@ -10,6 +10,8 @@ public class AdManager : MonoBehaviour
     private bool firstAdShown = false;
 
     public RewardedAds rewardedAds;
+    public RewardedAds2 rewardedAds2; // NEW: Reference to the second rewarded ads script
+    
     [SerializeField] bool turnOffRewardedAds = false; 
 
     public BannerAd bannerAd;
@@ -46,7 +48,9 @@ public class AdManager : MonoBehaviour
 
         if (!turnOffRewardedAds)
         {
-            rewardedAds.LoadAd();
+            // Load both rewarded ads systems if they exist
+            rewardedAds?.LoadAd();
+            rewardedAds2?.LoadAd(); // NEW: Load the second rewarded ads
         }
 
         if (!turnOffBannerAd)
@@ -97,14 +101,35 @@ public class AdManager : MonoBehaviour
         if (rewardedAds == null)
             rewardedAds = FindFirstObjectByType<RewardedAds>();
 
+        // NEW: Find the second rewarded ads script if not assigned
+        if (rewardedAds2 == null)
+            rewardedAds2 = FindFirstObjectByType<RewardedAds2>();
+
         if(bannerAd == null)
             bannerAd = FindFirstObjectByType<BannerAd>();
 
         Button rewardedAdButton =
             GameObject.FindGameObjectWithTag("RewardedButton").GetComponent<Button>();
 
-        if (rewardedAds != null && rewardedAdButton != null)
-            rewardedAds.SetButton(rewardedAdButton);
+        // Set up button for whichever rewarded ads system is available
+        if (rewardedAdButton != null)
+        {
+            // Priority: Use RewardedAds2 if available, otherwise fall back to original RewardedAds
+            if (rewardedAds2 != null)
+            {
+                rewardedAds2.SetButton(rewardedAdButton);
+                Debug.Log("RewardedAds2 button set up successfully");
+            }
+            else if (rewardedAds != null)
+            {
+                rewardedAds.SetButton(rewardedAdButton);
+                Debug.Log("Original RewardedAds button set up successfully");
+            }
+            else
+            {
+                Debug.LogWarning("No rewarded ads system found for button setup");
+            }
+        }
 
 
         Button bannerButton = GameObject.FindGameObjectWithTag("BannerButton").GetComponent<Button>();
@@ -122,6 +147,19 @@ public class AdManager : MonoBehaviour
 
         Debug.Log("Scene loaded!");
         HandleAdsInitialized();
+    }
 
+    // NEW: Helper method to get the active rewarded ads system
+    public MonoBehaviour GetActiveRewardedAdsSystem()
+    {
+        if (rewardedAds2 != null) return rewardedAds2;
+        if (rewardedAds != null) return rewardedAds;
+        return null;
+    }
+
+    // NEW: Check if any rewarded ads system is available
+    public bool IsRewardedAdsAvailable()
+    {
+        return rewardedAds != null || rewardedAds2 != null;
     }
 }
