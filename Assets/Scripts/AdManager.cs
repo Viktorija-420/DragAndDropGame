@@ -51,7 +51,7 @@ public class AdManager : MonoBehaviour
 
         if (!turnOffBannerAd)
         {
-            bannerAd.LoadBanner();
+            bannerAd.LoadAndShowBanner(); // Changed from LoadBanner() to LoadAndShowBanner()
         }
     }
 

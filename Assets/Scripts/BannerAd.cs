@@ -12,17 +12,22 @@ public class BannerAd : MonoBehaviour
 
     [SerializeField] BannerPosition _bannerPosition = BannerPosition.BOTTOM_CENTER;
 
-    private void Awake()
+    private void Start()
     {
         _adUnitId = _androidAdUnitId;
         Advertisement.Banner.SetPosition(_bannerPosition);
+        
+        // Load and show banner automatically when the game starts
+        LoadAndShowBanner();
     }
 
-    public void LoadBanner()
+    public void LoadAndShowBanner()
     {
         if(!Advertisement.isInitialized)
         {
             Debug.Log("Tried to load banner ad before Unity ads was initialized!");
+            // Try again after a short delay
+            Invoke(nameof(LoadAndShowBanner), 1f);
             return;
         }
 
@@ -39,37 +44,42 @@ public class BannerAd : MonoBehaviour
     void OnBannerLoaded()
     {
         Debug.Log("Banner ad loaded!");
-        _bannerButton.interactable = true;
+        // Automatically show the banner when loaded
+        ShowBannerAd();
+        
+        if (_bannerButton != null)
+            _bannerButton.interactable = true;
     }
 
     void OnBannerError(string message)
     {
         Debug.LogWarning("Banner Error: "+message);
-        LoadBanner();
+        // Retry loading after a short delay
+        Invoke(nameof(LoadAndShowBanner), 2f);
     }
 
     public void ShowBannerAd()
     {
         if(isBannerVisible)
         {
-            HideBannerAd();
-        
-        } else
-        {
-            BannerOptions options = new BannerOptions
-            {
-                clickCallback = OnBannerClicked,
-                hideCallback = OnBannerHidden,
-                showCallback = OnBannerShown
-            };
-
-            Advertisement.Banner.Show(_adUnitId, options);
+            return; // Banner is already visible, do nothing
         }
+
+        BannerOptions options = new BannerOptions
+        {
+            clickCallback = OnBannerClicked,
+            hideCallback = OnBannerHidden,
+            showCallback = OnBannerShown
+        };
+
+        Advertisement.Banner.Show(_adUnitId, options);
     }
 
     public void HideBannerAd()
     {
-        Advertisement.Banner.Hide();
+        // Remove this method or make it private to prevent hiding
+        // Advertisement.Banner.Hide();
+        Debug.Log("Banner hiding disabled - banner should always be visible");
     }
 
     void OnBannerClicked()
@@ -79,8 +89,10 @@ public class BannerAd : MonoBehaviour
 
     void OnBannerHidden()
     {
-        Debug.Log("Banner is hidden!");
+        Debug.Log("Banner was hidden! Showing it again...");
         isBannerVisible = false;
+        // Immediately show the banner again if it gets hidden
+        ShowBannerAd();
     }
 
     void OnBannerShown()
@@ -95,8 +107,19 @@ public class BannerAd : MonoBehaviour
             return;
 
         button.onClick.RemoveAllListeners();
+        // Remove the toggle functionality and just show the banner
         button.onClick.AddListener(ShowBannerAd);
         _bannerButton = button;
-        _bannerButton.interactable = false;
+        _bannerButton.interactable = true;
+    }
+
+    // Optional: Handle when the app loses/gains focus
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (!pauseStatus && !isBannerVisible)
+        {
+            // If app resumes and banner isn't visible, show it again
+            Invoke(nameof(ShowBannerAd), 0.5f);
+        }
     }
 }
