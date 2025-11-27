@@ -532,6 +532,7 @@ GameObject:
   - component: {fileID: 292084840}
   - component: {fileID: 292084839}
   - component: {fileID: 292084846}
+  - component: {fileID: 292084847}
   m_Layer: 0
   m_Name: Ads
   m_TagString: Untagged
@@ -553,7 +554,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _androidAdUnitId: Banner_Android
   _bannerButton: {fileID: 0}
-  isBannerVisible: 0
+  isBannerVisible: 1
   _bannerPosition: 1
 --- !u!114 &292084840
 MonoBehaviour:
@@ -562,7 +563,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 292084838}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7880afd573f315c41845d606749fa245, type: 3}
   m_Name: 
@@ -594,8 +595,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94b4892a3446884469d430d196737561, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _androidGameId: 5979324
-  _testMode: 1
 --- !u!114 &292084844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,6 +644,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _androidAdUnitId: Rewarded_Android
   _rewardedAdButton: {fileID: 84259812}
+--- !u!114 &292084847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 292084838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16b0d0c0983097f4ab7ffc78d9502572, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _androidGameId: 5979324
+  _testMode: 1
 --- !u!1 &320300279
 GameObject:
   m_ObjectHideFlags: 0
@@ -2086,7 +2099,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 455, y: -541.95}
+  m_AnchoredPosition: {x: 495, y: -492}
   m_SizeDelta: {x: 522.6433, y: 86.1009}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &786462592
@@ -3426,7 +3439,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -235.99634, y: -538.49054}
+  m_AnchoredPosition: {x: -261.32, y: -492}
   m_SizeDelta: {x: 522.6433, y: 86.1009}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1237753854
@@ -4030,6 +4043,58 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1585477809}
   m_CullTransparentMesh: 1
+--- !u!1 &1641018166
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1641018168}
+  - component: {fileID: 1641018167}
+  m_Layer: 0
+  m_Name: AdManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1641018167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1641018166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7952700f1153964abf7476b1bb42c4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  adsInitializer: {fileID: 292084847}
+  interstitialAd: {fileID: 292084842}
+  turnOffInterstitialAd: 0
+  rewardedAds: {fileID: 0}
+  rewardedAds2: {fileID: 292084846}
+  turnOffRewardedAds: 0
+  bannerAd: {fileID: 0}
+  turnOffBannerAd: 0
+--- !u!4 &1641018168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1641018166}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1001.9405, y: 479.47403, z: 1.1843195}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1651992139
 GameObject:
   m_ObjectHideFlags: 0
@@ -4992,8 +5057,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1125, y: 465}
-  m_SizeDelta: {x: 170.6345, y: 183.7303}
+  m_AnchoredPosition: {x: 1097, y: 465}
+  m_SizeDelta: {x: 120.8765, y: 133.9724}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2033859438
 MonoBehaviour:
@@ -5567,5 +5632,6 @@ SceneRoots:
   - {fileID: 1861028776}
   - {fileID: 326446183}
   - {fileID: 292084845}
+  - {fileID: 1641018168}
   - {fileID: 2135472918}
   - {fileID: 1897983323}

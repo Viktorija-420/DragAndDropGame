@@ -20,6 +20,7 @@ public class RewardedAds2 : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowL
         if (!Advertisement.isInitialized)
         {
             Debug.LogWarning("Tried to load rewarded ad before Unity ads was initialized.");
+            StartCoroutine(WaitAndLoad(3f));
             return;
         }
 
@@ -32,13 +33,16 @@ public class RewardedAds2 : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowL
         Debug.Log("Rewarded ad loaded!");
 
         if(placementId.Equals(_adUnitId)) {
-            _rewardedAdButton.interactable = true;
+            if (_rewardedAdButton != null)
+            {
+                _rewardedAdButton.interactable = true;
+            }
         }
     }
 
     public void OnUnityAdsFailedToLoad(string placementId, UnityAdsLoadError error, string message)
     {
-        Debug.LogWarning("Failed to load rewarded ad!");
+        Debug.LogWarning($"Failed to load rewarded ad: {error} - {message}");
         StartCoroutine(WaitAndLoad(5f));
     }
 
@@ -50,7 +54,7 @@ public class RewardedAds2 : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowL
 
     public void OnUnityAdsShowFailure(string placementId, UnityAdsShowError error, string message)
     {
-        Debug.LogWarning("Failed to show rewarded ad!");
+        Debug.LogWarning($"Failed to show rewarded ad: {error} - {message}");
         StartCoroutine(WaitAndLoad(5f));
     }
 
@@ -72,53 +76,215 @@ public class RewardedAds2 : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowL
         {
             Debug.Log("Rewarded ad completed!");
             
-            // Reduce moves by 5 when ad is completely watched
             ReduceMovesBy5();
                 
-            _rewardedAdButton.interactable = false;
+            if (_rewardedAdButton != null)
+            {
+                _rewardedAdButton.interactable = false;
+            }
             StartCoroutine(WaitAndLoad(10f));
         }
         else
         {
             Debug.Log("Rewarded ad not completed properly");
-            _rewardedAdButton.interactable = true;
+            if (_rewardedAdButton != null)
+            {
+                _rewardedAdButton.interactable = true;
+            }
         }
     }
 
-    // Improved method: Reduce moves by 5 with better error handling
     private void ReduceMovesBy5()
     {
         Debug.Log("Attempting to reduce moves by 5...");
         
-        // Method 1: Try to find UIManager in scene
-        UIManager uiManager = FindObjectOfType<UIManager>();
+        bool success = false;
         
-        if (uiManager != null)
+        // Method 1: Try to find any component that might track moves
+        MonoBehaviour[] allComponents = FindObjectsOfType<MonoBehaviour>();
+        foreach (MonoBehaviour component in allComponents)
         {
-            Debug.Log("UIManager found! Calling ReduceMoves(5)");
-            uiManager.ReduceMoves(5);
+            if (TryReduceMovesInComponent(component))
+            {
+                success = true;
+                break;
+            }
+        }
+
+        // Method 2: Try UI Text components that might display move count
+        if (!success)
+        {
+            success = TryReduceMovesInUIText();
+        }
+
+        if (success)
+        {
+            Debug.Log("Successfully reduced moves by 5!");
         }
         else
         {
-            Debug.LogError("UIManager not found in scene!");
-            
-            // Method 2: Try alternative approach - find GameManager and access moves
-            GameManager2 gameManager = FindObjectOfType<GameManager2>();
-            if (gameManager != null)
+            Debug.LogError("Could not find move counter system to reduce moves!");
+            // Don't create fallback - just log the error
+        }
+    }
+
+    private bool TryReduceMovesInComponent(MonoBehaviour component)
+    {
+        if (component == null) return false;
+
+        var componentType = component.GetType();
+        string componentName = componentType.Name;
+
+        // Skip if it's an ad-related component to avoid infinite loops
+        if (componentName.Contains("Ad") || componentName.Contains("Advertisement")) 
+            return false;
+
+        Debug.Log($"Checking component: {componentName}");
+
+        // Try public method ReduceMoves
+        var reduceMovesMethod = componentType.GetMethod("ReduceMoves");
+        if (reduceMovesMethod != null)
+        {
+            reduceMovesMethod.Invoke(component, new object[] { 5 });
+            Debug.Log($"Reduced moves via ReduceMoves method on {componentName}");
+            return true;
+        }
+
+        // Try public method AddMoves with negative value
+        var addMovesMethod = componentType.GetMethod("AddMoves");
+        if (addMovesMethod != null)
+        {
+            addMovesMethod.Invoke(component, new object[] { -5 });
+            Debug.Log($"Reduced moves via AddMoves method on {componentName}");
+            return true;
+        }
+
+        // Try SetMoves method - we need to get current moves first
+        var setMovesMethod = componentType.GetMethod("SetMoves");
+        if (setMovesMethod != null)
+        {
+            int currentMoves = GetCurrentMovesFromComponent(component);
+            if (currentMoves >= 0) // If we found valid moves
             {
-                Debug.Log("GameManager2 found, but cannot access moves directly");
+                setMovesMethod.Invoke(component, new object[] { Mathf.Max(0, currentMoves - 5) });
+                Debug.Log($"Reduced moves via SetMoves method on {componentName} from {currentMoves} to {currentMoves - 5}");
+                return true;
             }
+        }
+
+        // Try various field names
+        string[] possibleFieldNames = { "moveCount", "moves", "currentMoves", "totalMoves", "moveCounter", "m_Moves", "_moves" };
+        foreach (string fieldName in possibleFieldNames)
+        {
+            var field = componentType.GetField(fieldName, 
+                System.Reflection.BindingFlags.Public | 
+                System.Reflection.BindingFlags.NonPublic | 
+                System.Reflection.BindingFlags.Instance);
             
-            // Method 3: Try to find any object with move counting capability
-            MonoBehaviour[] allObjects = FindObjectsOfType<MonoBehaviour>();
-            foreach (MonoBehaviour obj in allObjects)
+            if (field != null && field.FieldType == typeof(int))
             {
-                if (obj.GetType().Name.Contains("UI") || obj.GetType().Name.Contains("Manager"))
+                int currentMoves = (int)field.GetValue(component);
+                field.SetValue(component, Mathf.Max(0, currentMoves - 5));
+                Debug.Log($"Reduced moves via {fieldName} field on {componentName} from {currentMoves} to {currentMoves - 5}");
+                return true;
+            }
+        }
+
+        // Try various property names
+        string[] possiblePropertyNames = { "Moves", "MoveCount", "CurrentMoves", "TotalMoves" };
+        foreach (string propertyName in possiblePropertyNames)
+        {
+            var property = componentType.GetProperty(propertyName);
+            if (property != null && property.PropertyType == typeof(int) && property.CanWrite)
+            {
+                int currentMoves = (int)property.GetValue(component);
+                property.SetValue(component, Mathf.Max(0, currentMoves - 5));
+                Debug.Log($"Reduced moves via {propertyName} property on {componentName} from {currentMoves} to {currentMoves - 5}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int GetCurrentMovesFromComponent(MonoBehaviour component)
+    {
+        if (component == null) return -1;
+
+        var componentType = component.GetType();
+
+        // Try GetMoves method
+        var getMovesMethod = componentType.GetMethod("GetMoves");
+        if (getMovesMethod != null && getMovesMethod.ReturnType == typeof(int))
+        {
+            return (int)getMovesMethod.Invoke(component, null);
+        }
+
+        // Try various field names
+        string[] possibleFieldNames = { "moveCount", "moves", "currentMoves", "totalMoves" };
+        foreach (string fieldName in possibleFieldNames)
+        {
+            var field = componentType.GetField(fieldName, 
+                System.Reflection.BindingFlags.Public | 
+                System.Reflection.BindingFlags.NonPublic | 
+                System.Reflection.BindingFlags.Instance);
+            
+            if (field != null && field.FieldType == typeof(int))
+            {
+                return (int)field.GetValue(component);
+            }
+        }
+
+        // Try various property names
+        string[] possiblePropertyNames = { "Moves", "MoveCount", "CurrentMoves", "TotalMoves" };
+        foreach (string propertyName in possiblePropertyNames)
+        {
+            var property = componentType.GetProperty(propertyName);
+            if (property != null && property.PropertyType == typeof(int) && property.CanRead)
+            {
+                return (int)property.GetValue(component);
+            }
+        }
+
+        return -1; // Couldn't find moves
+    }
+
+    private bool TryReduceMovesInUIText()
+    {
+        Text[] allTexts = FindObjectsOfType<Text>();
+        foreach (Text text in allTexts)
+        {
+            if (text.text.ToLower().Contains("move") && text.text.Contains(":"))
+            {
+                Debug.Log($"Found potential moves text: {text.text}");
+                
+                // Try to extract number after "Moves: " pattern
+                string textLower = text.text.ToLower();
+                int colonIndex = textLower.IndexOf(':');
+                if (colonIndex >= 0)
                 {
-                    Debug.Log($"Found potential manager: {obj.GetType().Name}");
+                    string afterColon = text.text.Substring(colonIndex + 1).Trim();
+                    if (int.TryParse(afterColon, out int currentMoves))
+                    {
+                        int newMoves = Mathf.Max(0, currentMoves - 5);
+                        text.text = text.text.Replace(currentMoves.ToString(), newMoves.ToString());
+                        Debug.Log($"Reduced moves in UI text from {currentMoves} to {newMoves}");
+                        return true;
+                    }
+                }
+                
+                // Try to find any number in the text
+                var match = System.Text.RegularExpressions.Regex.Match(text.text, @"\d+");
+                if (match.Success && int.TryParse(match.Value, out int moves))
+                {
+                    int newMoves = Mathf.Max(0, moves - 5);
+                    text.text = text.text.Replace(moves.ToString(), newMoves.ToString());
+                    Debug.Log($"Reduced moves in UI text from {moves} to {newMoves}");
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     public void SetButton(Button button)
@@ -136,11 +302,13 @@ public class RewardedAds2 : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowL
     public void ShowAd()
     {
         Debug.Log("ShowAd called - button clicked");
-        _rewardedAdButton.interactable = false;
+        if (_rewardedAdButton != null)
+        {
+            _rewardedAdButton.interactable = false;
+        }
         Advertisement.Show(_adUnitId, this);
     }
 
-    // Add this for testing without ads
     public void TestReduceMoves()
     {
         Debug.Log("TEST: Manually reducing moves by 5");
